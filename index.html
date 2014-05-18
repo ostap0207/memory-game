@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en" ng-app>
+<head>
+  <meta charset="utf-8">
+  <title>My HTML File</title>
+  <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.15/angular.min.js"></script>
+  <style type="text/css">
+.container { 
+  position: relative;
+  -webkit-perspective: 800;
+}
+.shadowed{
+	box-shadow: 0px 0px 10px #888888;	
+}
+  .card {
+  width: 150px;
+  height: 150px;
+  position: absolute;
+  -webkit-transform-style: preserve-3d;
+  -webkit-transition: -webkit-transform 1s;
+}
+.card .in {
+  display: block;
+  position: absolute;
+  -webkit-backface-visibility: hidden;
+}
+.card .front{
+	-webkit-transform: rotateY(180deg);
+	background: white;
+}
+.card .back {
+	width: 150px;
+	height: 150px;
+  background: #3276b1;
+}
+
+.flipped {
+  -webkit-transform: rotateY(180deg);
+}
+
+#deck .in{
+	width: 150px;
+	height: 150px;
+}
+
+  </style>
+</head>
+<body>
+
+<div ng-app="gameApp" ng-controller="gameController">
+<div align="center"><button class="btn btn-primary" ng-click="startGame()">Start</button>
+<button class="btn btn-primary disabled">Clicks : {{clicks}}</button>
+</div>
+
+<div id="deck" style="float:right;width:200px;">
+	<div ng-repeat="cell in deck" class="in shadowed">
+		<img src="{{cell.img}}" alt="{{cell.img}}" style="height: 150px; width:150px" />
+	</div>
+</div>
+<div id="board" style="float:left;width:800px;">
+	<div ng-repeat="col in board" style="width:800px" class="container">
+		<div class="card shadowed"  ng-hide="isInDeck(cell.img)" ng-class="{'flipped': first == cell || second == cell}" style="top:{{cell.top}}px;left:{{cell.left}}px" ng-repeat="cell in col" style="display:inline;" ng-click="onCellClick(cell)">
+		<div class="front in">
+			<img alt="{{cell.img}}" src="{{cell.img}}" style="height: 150px; width:150px" />
+		</div>
+		 <div class="back in" >
+		 </div>
+		</div>
+	</div>
+</div>
+</div>
+
+<script>
+
+function shuffle(o){
+    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+}
+
+function gameController($scope, $timeout) {
+  $scope.images = ["1.png","2.png","3.png","4.jpg"];
+
+  $scope.init = function(){
+  	$scope.board = [];
+  	$scope.deck = [];
+	$scope.first = null;
+	$scope.second = null;
+	$scope.clicks = 0;
+  }
+
+  $scope.startGame = function(){
+  	$scope.init();
+  	var startX = 10;
+  	var startY = 10;
+  	var width = 150;
+  	var height = 150;
+  	var gap = 10;
+  	var uid = 0;
+
+
+  	var cards = [];
+  	for (var j = 0; j < 2; j++) {
+		for (var i in $scope.images) {
+	  		card = new Object();
+	  		card.id = uid++;
+	  		card.img = $scope.images[i];
+	  		cards.push(card);
+	  	}
+  	}
+
+  	shuffle(cards);
+  	var row1 = [];
+  	for (i = 0;i < cards.length/2;i++) {
+  		cell = cards[i];
+  		cell.top=startY;
+  		cell.left = startX + i * (width + gap);
+  		row1.push(cell);
+  	};
+
+  	var row2= [];
+  	for (i = 0;i < cards.length/2;i++) {
+  		cell = cards[cards.length/2 + i];
+  		cell.top=startY + height + gap;
+  		cell.left = startX + i * (width + gap);
+  		row2.push(cell);
+  	};
+
+  	$scope.board.push(row1);
+  	$scope.board.push(row2);
+  }
+
+	$scope.isInDeck = function(img){
+		for (var i in $scope.deck) {
+ 			if ($scope.deck[i].img == img)
+ 				return true;
+  		};
+  		return false;
+  	}
+
+  $scope.onCellClick = function(cell){
+  	if ($scope.first == null){
+  		$scope.first = cell;	
+  		$scope.clicks++;
+  	}else if ($scope.first.id != cell.id){
+  		$scope.second = cell;
+  		$scope.clicks++;
+  	}
+
+  	if ($scope.first != null && $scope.second != null){
+  		$timeout(function(){
+	  		if ($scope.first.img == $scope.second.img){
+  				$scope.deck.push($scope.first);
+  			}
+  			$scope.first = null;
+  			$scope.second = null;
+  			if ($scope.deck.length == $scope.images.length){
+  				alert("You won.");
+  			}
+  		}, 800);
+
+  	}
+  }
+}
+
+</script>
+</body>
+</html>
