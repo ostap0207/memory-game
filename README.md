@@ -1,4 +1,4 @@
 memory-game
 ===========
 
-Memory game made with angularjs
+Memory game made with angular.js
